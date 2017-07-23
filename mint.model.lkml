@@ -18,6 +18,7 @@ include: "*.dashboard.lookml"  # include all dashboards in this project
 #   }
 # }
 
+
 explore: transactions {
   join: merchant_facts {
     type: left_outer
