@@ -3,7 +3,7 @@ view: category_facts {
   derived_table: {
     sql:
       SELECT
-         T."Category"
+         T."Category"                                             AS "TCategory"
         ,SUM(T."Amount")                                          AS total_amount
         ,COUNT(DISTINCT T.id)                                     AS volume
         ,AVG(T."Amount")                                          AS avg_amount
@@ -28,6 +28,8 @@ view: category_facts {
         AND {% condition transactions.date_week %}          T."Date"                 {% endcondition %}
         AND {% condition transactions.date_week_of_year %}  T."Date"                 {% endcondition %}
         AND {% condition transactions.date_month_num %}     T."Date"                 {% endcondition %}
+        AND {% condition transactions.is_transfer %}        1=1                      {% endcondition %}
+        AND {% condition transactions.is_expensable %}      1=1                      {% endcondition %}
       GROUP BY
         1
        ;;
@@ -35,11 +37,14 @@ view: category_facts {
 
   filter: tail {
     type: number
+    label: "Other Threshold"
+    description: "Ordinal rank at which categories will be grouped into an other bucket..."
   }
 
   dimension: category {
+    hidden: yes
     type: string
-    sql: ${TABLE}."Category" ;;
+    sql: ${TABLE}."TCategory" ;;
   }
 
 ####### AMOUNT #######

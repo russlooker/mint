@@ -5,6 +5,7 @@ view: transactions {
     primary_key: yes
     type: number
     sql: ${TABLE}."id" ;;
+    hidden: yes
   }
 
   dimension: account_name {
@@ -12,16 +13,19 @@ view: transactions {
     sql: ${TABLE}."Account Name" ;;
   }
 
-  dimension: raw_amount {
-    type: number
-    sql: ${TABLE}."Amount" ;;
+  dimension: amount_range {
+    type: tier
+    style: integer
+    sql: CASE WHEN ${amount} < 0 THEN ${amount}*-1.0 ELSE ${amount} END  ;;
+    tiers: [0,6,11,21,51,101,501,1001]
   }
 
   dimension: amount {
     type: number
+    group_label: "Details"
     sql:
         CASE
-          WHEN ${transaction_type} = 'debit' then ${raw_amount} * -1.0
+          WHEN ${transaction_type} = 'debit' then ${TABLE}."Amount" * -1.0
           ELSE ${TABLE}."Amount"
         END
         ;;
@@ -29,7 +33,8 @@ view: transactions {
 
 
   dimension: category {
-    hidden: yes
+    view_label: "Category"
+    label: "Category"
     type: string
     sql: ${TABLE}."Category" ;;
   }
@@ -48,12 +53,12 @@ view: transactions {
     ]
     convert_tz: no
     sql: ${TABLE}."Date" ;;
-    label: "Transaction"
+    label: "1) Transaction"
   }
 
   dimension: is_before_wtd {
     description: "Filter this on 'yes' to compare to same period in previous weeks"
-    group_label: "Transaction Date"
+    group_label: "1) Transaction Date"
     type: yesno
     sql:
       (EXTRACT(DOW FROM ${date_raw}) < EXTRACT(DOW FROM CURRENT_DATE)
@@ -73,7 +78,7 @@ view: transactions {
 
   dimension: is_before_mtd {
     description: "Filter this on 'yes' to compare to same period in previous months"
-    group_label: "Transaction Date"
+    group_label: "1) Transaction Date"
     type: yesno
     sql:
       (EXTRACT(DAY FROM ${date_raw}) < EXTRACT(DAY FROM CURRENT_DATE)
@@ -93,7 +98,7 @@ view: transactions {
 
   dimension: is_before_ytd {
     description: "Filter this on 'yes' to compare to same period in previous years"
-    group_label: "Transaction Date"
+    group_label: "1) Transaction Date"
     type: yesno
     sql:
       (EXTRACT(DOY FROM ${date_raw}) < EXTRACT(DOY FROM CURRENT_DATE)
@@ -116,23 +121,33 @@ view: transactions {
   dimension: description {
     type: string
     sql: ${TABLE}."Description" ;;
-    hidden: yes
+    label: "1) Merchant"
+    view_label: "Merchant"
+    link: {
+      label: "View Merchant Transactions in Mint"
+      icon_url: "https://mint.intuit.com/favicon.ico"
+      url: "https://mint.intuit.com/transaction.event#location:%7B%22query%22%3A%22description%3A%20{{value | uri_encode }}%22%2C%22offset%22%3A0%2C%22typeFilter%22%3A%22cash%22%2C%22typeSort%22%3A8%7D"
+
+    }
   }
 
   dimension: labels {
     type: string
     sql: ${TABLE}."Labels" ;;
+    group_label: "Details"
   }
 
   dimension: notes {
     type: string
     sql: ${TABLE}."Notes" ;;
+    group_label: "Details"
   }
 
   dimension: original_description {
     type: string
     sql: ${TABLE}."Original Description" ;;
-    label: "Description"
+    label: "Full Transaction Code"
+    group_label: "Details"
   }
 
   dimension: transaction_type {
@@ -144,13 +159,6 @@ view: transactions {
   measure: count {
     type: count
     drill_fields: [id, account_name]
-  }
-
-  measure: total_net_amount {
-    type: sum
-    sql: ${amount} ;;
-    drill_fields: [date_date,description,category,notes,transaction_type,total_net_amount]
-    value_format_name: usd
   }
 
   measure: total_income_amount {
@@ -186,20 +194,19 @@ view: transactions {
     value_format_name: usd
   }
 
-
   dimension: is_expensable {
     type: yesno
-    sql:  ${labels} = 'expensable' ;;
+    sql:  "Labels" = 'expensable' ;;
   }
 
   dimension: is_transfer {
     type: yesno
-    sql: ${category} in
+    sql: "Category" in
           ('transfer',
            'transfer for cash spending',
           'withdrawal',
           'cash & atm',
-          'financial','hide from budgets & trends','auto payment','credit card payment','mortgage & rent')
+          'financial','hide from budgets & trends','credit card payment')
       ;;
   }
 

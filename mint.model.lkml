@@ -3,23 +3,23 @@ connection: "mint"
 include: "*.view.lkml"         # include all views in this project
 include: "*.dashboard.lookml"  # include all dashboards in this project
 
-# # Select the views that should be a part of this model,
-# # and define the joins that connect them together.
-#
-# explore: order_items {
-#   join: orders {
-#     relationship: many_to_one
-#     sql_on: ${orders.id} = ${order_items.order_id} ;;
-#   }
-#
-#   join: users {
-#     relationship: many_to_one
-#     sql_on: ${users.id} = ${orders.user_id} ;;
-#   }
-# }
-
-
 explore: transactions {
+  label: "Mint Transactions"
+  description: "Filtered to normal expenses by default"
+  always_filter: {
+    filters: {
+      field: transactions.is_transfer
+      value: "No"
+    }
+    filters: {
+      field: transactions.is_expensable
+      value: "No"
+    }
+    filters: {
+      field: transactions.transaction_type
+      value: "debit"
+    }
+  }
   join: merchant_facts {
     type: left_outer
     relationship: many_to_one
