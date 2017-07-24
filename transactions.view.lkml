@@ -49,7 +49,10 @@ view: transactions {
       quarter,
       year,
       week_of_year,
-      month_num
+      month_num,
+      day_of_week,
+      day_of_week_index,
+      day_of_year
     ]
     convert_tz: no
     sql: ${TABLE}."Date" ;;
@@ -158,13 +161,13 @@ view: transactions {
 
   measure: count {
     type: count
-    drill_fields: [id, account_name]
+    drill_fields: [transaction_detail*, total_income_amount]
   }
 
   measure: total_income_amount {
     type: sum
     sql: ${amount} ;;
-    drill_fields: [date_date,description,category,notes,transaction_type,total_income_amount]
+    drill_fields: [transaction_detail*, -total_spend_amount, total_income_amount]
     filters: {
       field: transaction_type
       value: "credit"
@@ -175,7 +178,7 @@ view: transactions {
   measure: total_spend_amount {
     type: sum
     sql: ${amount} * -1 ;;
-    drill_fields: [date_date,description,category,notes,transaction_type,total_spend_amount]
+    drill_fields: [transaction_detail*]
     filters: {
       field: transaction_type
       value: "debit"
@@ -186,7 +189,7 @@ view: transactions {
   measure: average_spend_amount {
     type: average
     sql: ${amount} * -1 ;;
-    drill_fields: [date_date,description,category,notes,transaction_type,total_spend_amount]
+    drill_fields: [transaction_detail*]
     filters: {
       field: transaction_type
       value: "debit"
@@ -210,6 +213,9 @@ view: transactions {
       ;;
   }
 
+set: transaction_detail {
+  fields: [date_date,description,category,notes,transaction_type,total_spend_amount]
+}
 
 
 }
