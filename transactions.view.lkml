@@ -130,7 +130,11 @@ view: transactions {
       label: "View Merchant Transactions in Mint"
       icon_url: "https://mint.intuit.com/favicon.ico"
       url: "https://mint.intuit.com/transaction.event#location:%7B%22query%22%3A%22description%3A%20{{value | uri_encode }}%22%2C%22offset%22%3A0%2C%22typeFilter%22%3A%22cash%22%2C%22typeSort%22%3A8%7D"
-
+    }
+    link: {
+      label: "View Merchant Lookup Dashboard"
+      icon_url: "http://looker.com/favicon.ico"
+      url: "/dashboards/2?Merchant={{value | uri_encode }}"
     }
   }
 
