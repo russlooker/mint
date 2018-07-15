@@ -203,17 +203,17 @@ view: transactions {
 
   dimension: is_expensable {
     type: yesno
-    sql:  "Labels" = 'expensable' ;;
+    sql:  lower("Labels") = 'expensable' ;;
   }
 
   dimension: is_transfer {
     type: yesno
-    sql: "Category" in
+    sql: lower("Category") in
           ('transfer',
            'transfer for cash spending',
           'withdrawal',
           'cash & atm',
-          'financial','hide from budgets & trends','credit card payment')
+          'financial','hide from budgets & trends','credit card payment','Credit Card Payment')
       ;;
   }
 
