@@ -1,7 +1,6 @@
 connection: "mint"
 
 include: "*.view.lkml"         # include all views in this project
-include: "*.dashboard.lookml"  # include all dashboards in this project
 
 explore: transactions {
   label: "Mint Transactions"
@@ -23,11 +22,11 @@ explore: transactions {
   join: merchant_facts {
     type: left_outer
     relationship: many_to_one
-    sql_on:  ${transactions.description} = ${merchant_facts.merchant}  ;;
+    sql_on:  lower(${transactions.description}) = lower(${merchant_facts.merchant})  ;;
   }
   join: category_facts {
     type: left_outer
     relationship: many_to_one
-    sql_on:  ${transactions.category} = ${category_facts.category}  ;;
+    sql_on:  lower(${transactions.category}) = lower(${category_facts.category})  ;;
   }
 }

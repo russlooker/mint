@@ -31,8 +31,8 @@ view: category_facts {
         AND {% condition transactions.date_day_of_year %}   T."Date"                 {% endcondition %}
         AND {% condition transactions.date_day_of_week %}   T."Date"                 {% endcondition %}
         AND {% condition transactions.date_day_of_week_index %} T."Date"             {% endcondition %}
-        AND {% condition transactions.is_transfer %}        1=1                      {% endcondition %}
-        AND {% condition transactions.is_expensable %}      1=1                      {% endcondition %}
+        AND {% condition transactions.is_transfer %}             {{ transactions.is_transfer._sql }}               {% endcondition %}
+        AND {% condition transactions.is_expensable %}            {{ transactions.is_expensable._sql}}             {% endcondition %}
       GROUP BY
         1
        ;;
