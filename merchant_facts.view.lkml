@@ -9,6 +9,7 @@ view: merchant_facts {
         ,AVG(T."Amount")                                              AS avg_amount
         ,MAX(T."Amount")                                              AS max_amount
         ,COUNT(DISTINCT id)*1.0/NULLIF(MAX(T."Date")-MIN(T."Date"),0) AS frequency
+        ,COUNT(DISTINCT T."Amount")                                   AS charge_amount_diversity
         ,MIN(T."Date")                                                AS first_transaction
         ,MAX(T."Date")                                                AS last_transaction
         ,MAX(T."Date")-MIN(T."Date")                                  AS duration
@@ -85,23 +86,48 @@ view: merchant_facts {
     sql: ${TABLE}.frequency ;;
     value_format_name: decimal_3
   }
+dimension: charge_diversity {
+  type: number
+  group_label: "Facts"
+  sql: ${TABLE}.charge_amount_diversity ;;
+}
+dimension: charge_diversity_ratio {
+  type: number
+#   hidden: yes
+  sql: ${volume}*1.0/${charge_diversity} ;;
+  value_format_name: decimal_2
+}
   dimension: tolerance {
     type: number
     hidden: yes
-    sql: 0.25 ;;
+    sql: 1.75 ;;
+  }
+
+  dimension: lower_bound {
+    type: number
+    hidden: yes
+    sql: ((1.0/30)*(1-${tolerance})) ;;
+  }
+  dimension: upper_bound {
+    type: number
+    hidden: yes
+    sql: ((1.0/30)*(1+${tolerance})) ;;
   }
   dimension: frequency_tier {
     type: string
     group_label: "Facts"
     label: "Charge Regularity Tier"
     sql:
+    CASE WHEN ${charge_diversity_ratio} >= 2 THEN
       CASE
-        WHEN ${frequency} BETWEEN ((1.0/90)*(1-${tolerance})) AND ((1.0/90)*(1+${tolerance})) THEN 'Quarterly'
         WHEN ${frequency} BETWEEN ((1.0/30)*(1-${tolerance})) AND ((1.0/30)*(1+${tolerance})) THEN 'Monthly'
-        WHEN ${frequency} BETWEEN ((1.0/7)*(1-${tolerance})) AND ((1.0/7)*(1+${tolerance})) THEN 'Weekly'
+        WHEN ${frequency} BETWEEN ((1.0/90)*(1-${tolerance})) AND ((1.0/90)*(1+${tolerance})) THEN 'Quarterly'
         WHEN ${frequency} BETWEEN ((1.0/365)*(1-${tolerance})) AND ((1.0/365)*(1+${tolerance})) THEN 'Annual'
+        WHEN ${frequency} BETWEEN ((1.0/7)*(1-${tolerance})) AND ((1.0/7)*(1+${tolerance})) THEN 'Weekly'
       ELSE 'No Pattern'
       END
+    ELSE 'No Pattern'
+    END
 ;;
     value_format_name: decimal_3
   }

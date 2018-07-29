@@ -60,6 +60,7 @@ view: transactions {
     label: "1) Transaction"
   }
 
+
   dimension: is_before_wtd {
     description: "Filter this on 'yes' to compare to same period in previous weeks"
     group_label: "1) Transaction Date"
