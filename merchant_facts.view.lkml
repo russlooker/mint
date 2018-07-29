@@ -85,6 +85,27 @@ view: merchant_facts {
     sql: ${TABLE}.frequency ;;
     value_format_name: decimal_3
   }
+  dimension: tolerance {
+    type: number
+    hidden: yes
+    sql: 0.25 ;;
+  }
+  dimension: frequency_tier {
+    type: string
+    group_label: "Facts"
+    label: "Charge Regularity Tier"
+    sql:
+      CASE
+        WHEN ${frequency} BETWEEN ((1.0/90)*(1-${tolerance})) AND ((1.0/90)*(1+${tolerance})) THEN 'Quarterly'
+        WHEN ${frequency} BETWEEN ((1.0/30)*(1-${tolerance})) AND ((1.0/30)*(1+${tolerance})) THEN 'Monthly'
+        WHEN ${frequency} BETWEEN ((1.0/7)*(1-${tolerance})) AND ((1.0/7)*(1+${tolerance})) THEN 'Weekly'
+        WHEN ${frequency} BETWEEN ((1.0/365)*(1-${tolerance})) AND ((1.0/365)*(1+${tolerance})) THEN 'Annual'
+      ELSE 'No Pattern'
+      END
+;;
+    value_format_name: decimal_3
+  }
+
   dimension: days_since_last_charge {
     type: number
     group_label: "Facts"

@@ -188,7 +188,71 @@ view: transactions {
       value: "debit"
     }
     value_format_name: usd
+    link: {
+      label: "Top Merchants"
+      url: "
+      {% assign vis_config = '{
+      \"stacking\"              : \"normal\",
+      \"legend_position\"       : \"right\",
+      \"x_axis_gridlines\"      : false,
+      \"y_axis_gridlines\"      : true,
+      \"show_view_names\"       : false,
+      \"y_axis_combined\"       : true,
+      \"show_y_axis_labels\"    : true,
+      \"show_y_axis_ticks\"     : true,
+      \"y_axis_tick_density\"   : \"default\",
+      \"show_x_axis_label\"     : true,
+      \"show_x_axis_ticks\"     : true,
+      \"show_null_points\"      : false,
+      \"type\"                  : \"looker_pie\",
+      \"inner_radius\"          : 50,
+      \"colors\": [\"palette: Mixed Dark\"]
+      }' %}
+      /explore/mint/transactions?fields=transactions.total_spend_amount,merchant_facts.merchant_by_amount_tail&f[merchant_facts.tail]=%3C%3D10&f[transactions.transaction_type]=debit&f[transactions.is_expensable]=No&f[transactions.is_transfer]=No
+      {% if transactions.date_month._is_selected %}
+      &f[transactions.date_month]={{transactions.date_month._value | encode_uri }}
+      {% elsif transactions.date_week._is_selected %}
+      &f[transactions.date_week]={{transactions.date_week._value | encode_uri }}
+      {% elsif transactions.date_date._is_selected %}
+      &f[transactions.date_date]={{transactions.date_date._value | encode_uri }}
+      {% elsif transactions.date_year._is_selected %}
+      &f[transactions.date_year]={{transactions.date_year._value | encode_uri }}
+      {% endif %}&sorts=merchant_facts.merchant_by_amount_tail&limit=500&column_limit=50&vis_config={{ vis_config | encode_uri }}&toggle=dat,pik,vis"
+    }
+    link: {
+      label: "Top Categories"
+      url: "
+      {% assign vis_config = '{
+      \"stacking\"              : \"normal\",
+      \"legend_position\"       : \"right\",
+      \"x_axis_gridlines\"      : false,
+      \"y_axis_gridlines\"      : true,
+      \"show_view_names\"       : false,
+      \"y_axis_combined\"       : true,
+      \"show_y_axis_labels\"    : true,
+      \"show_y_axis_ticks\"     : true,
+      \"y_axis_tick_density\"   : \"default\",
+      \"show_x_axis_label\"     : true,
+      \"show_x_axis_ticks\"     : true,
+      \"show_null_points\"      : false,
+      \"type\"                  : \"looker_pie\",
+      \"inner_radius\"          : 50,
+      \"colors\": [\"palette: Mixed Dark\"]
+      }' %}
+      /explore/mint/transactions?fields=transactions.total_spend_amount,category_facts.category_by_amount_tail&f[category_facts.tail]=%3C%3D10&f[transactions.transaction_type]=debit&f[transactions.is_expensable]=No&f[transactions.is_transfer]=No
+      {% if transactions.date_month._is_selected %}
+      &f[transactions.date_month]={{transactions.date_month._value | encode_uri }}
+      {% elsif transactions.date_week._is_selected %}
+      &f[transactions.date_week]={{transactions.date_week._value | encode_uri }}
+      {% elsif transactions.date_date._is_selected %}
+      &f[transactions.date_date]={{transactions.date_date._value | encode_uri }}
+      {% elsif transactions.date_year._is_selected %}
+      &f[transactions.date_year]={{transactions.date_year._value | encode_uri }}
+      {% endif %}
+      &sorts=category_facts.category_by_amount_tail&limit=500&column_limit=50&vis_config={{ vis_config | encode_uri }}&toggle=dat,pik,vis"
+    }
   }
+
 
   measure: average_spend_amount {
     type: average
