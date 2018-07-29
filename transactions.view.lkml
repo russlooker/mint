@@ -52,7 +52,8 @@ view: transactions {
       month_num,
       day_of_week,
       day_of_week_index,
-      day_of_year
+      day_of_year,
+      day_of_month
     ]
     convert_tz: no
     sql: ${TABLE}."Date" ;;
@@ -253,6 +254,12 @@ view: transactions {
     }
   }
 
+measure: running_total_spend {
+  label: "Running Total Spend"
+  drill_fields: [transaction_detail*]
+  type: running_total
+  sql: ${total_spend_amount} ;;
+}
 
   measure: average_spend_amount {
     type: average
