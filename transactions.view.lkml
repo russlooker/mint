@@ -39,6 +39,51 @@ view: transactions {
     sql: ${TABLE}."Category" ;;
   }
 
+
+filter: reporting_period {
+  type: date
+}
+
+
+filter: comparison_period {
+  type: date
+  sql:
+     ${date_raw}>= {% date_start comparison_period  %}
+  AND ${date_raw} <= {% date_end reporting_period %}
+  ;;
+
+}
+
+parameter: imputed_periods {
+  type: number
+}
+
+parameter: imputed_periods_type {
+  type: unquoted
+  allowed_value: {
+    label: "Months"
+    value: "month"
+  }
+  allowed_value: {
+    label: "Years"
+    value: "year"
+  }
+  allowed_value: {
+    label: "Days"
+    value: "day"
+  }
+}
+
+  filter: comparison_period_imputed {
+    type: yesno
+    sql:
+     ${date_raw} >= ({% date_start reporting_period %} - INTERVAL '{% parameter imputed_periods %} {% parameter imputed_periods_type %}')
+  AND ${date_raw} <= {% date_end reporting_period %}
+  ;;
+
+    }
+
+
   dimension_group: date {
     type: time
     timeframes: [
@@ -81,22 +126,34 @@ view: transactions {
       );;
   }
 
+dimension: synthetic_end_date {
+  type: date
+  hidden: yes
+  sql:
+  CASE
+    WHEN CURRENT_DATE < {% if date_date._is_filtered %} {% date_end date_date %} {% else %} {% date_end reporting_period %} {% endif %} THEN CURRENT_DATE
+    ELSE {% if date_date._is_filtered %} {% date_end date_date %} {% else %} {% date_end reporting_period %} {% endif %}
+  END
+  ;;
+}
+
+
   dimension: is_before_mtd {
     description: "Filter this on 'yes' to compare to same period in previous months"
     group_label: "1) Transaction Date"
     type: yesno
     sql:
-      (EXTRACT(DAY FROM ${date_raw}) < EXTRACT(DAY FROM CURRENT_DATE)
+      (EXTRACT(DAY FROM ${date_raw}) < EXTRACT(DAY FROM ${synthetic_end_date})
         OR
         (
-          EXTRACT(DAY FROM ${date_raw}) = EXTRACT(DAY FROM CURRENT_DATE) AND
-          EXTRACT(HOUR FROM ${date_raw}) < EXTRACT(HOUR FROM CURRENT_DATE)
+          EXTRACT(DAY FROM ${date_raw}) = EXTRACT(DAY FROM ${synthetic_end_date}) AND
+          EXTRACT(HOUR FROM ${date_raw}) < EXTRACT(HOUR FROM ${synthetic_end_date})
         )
         OR
         (
-          EXTRACT(DAY FROM ${date_raw}) = EXTRACT(DAY FROM CURRENT_DATE) AND
-          EXTRACT(HOUR FROM ${date_raw}) <= EXTRACT(HOUR FROM CURRENT_DATE) AND
-          EXTRACT(MINUTE FROM ${date_raw}) < EXTRACT(MINUTE FROM CURRENT_DATE)
+          EXTRACT(DAY FROM ${date_raw}) = EXTRACT(DAY FROM ${synthetic_end_date}) AND
+          EXTRACT(HOUR FROM ${date_raw}) <= EXTRACT(HOUR FROM ${synthetic_end_date}) AND
+          EXTRACT(MINUTE FROM ${date_raw}) < EXTRACT(MINUTE FROM ${synthetic_end_date})
         )
       );;
   }
