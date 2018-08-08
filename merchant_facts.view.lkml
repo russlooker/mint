@@ -38,6 +38,14 @@ view: merchant_facts {
         AND {% condition transactions.date_day_of_week_index %} T."Date"             {% endcondition %}
         AND {% condition transactions.is_transfer %}  {{ transactions.is_transfer._sql }}  {% endcondition %}
         AND {% condition transactions.is_expensable %} {{ transactions.is_expensable._sql }}{% endcondition %}
+        AND ({% if transactions.comparison_period_imputed._in_query %}
+                   T."Date" >= ({% date_start transactions.reporting_period %}
+                  - INTERVAL '{% parameter transactions.imputed_periods %} {% parameter transactions.imputed_periods_type %}')
+                    AND T."Date" <= {% date_end transactions.reporting_period %}
+
+            {% else %}
+              1=1
+            {% endif %})
       GROUP BY
         1
        ;;
