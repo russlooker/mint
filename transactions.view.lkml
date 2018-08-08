@@ -142,24 +142,27 @@ dimension: synthetic_end_date {
 
 
   dimension: is_before_mtd {
+    #since this is only at the day level this needed to be converted to a less than or equal to expression
     description: "Filter this on 'yes' to compare to same period in previous months"
     group_label: "1) Transaction Date"
     type: yesno
     sql:
-      (EXTRACT(DAY FROM ${date_raw}) < EXTRACT(DAY FROM ${synthetic_end_date})
-        OR
-        (
-          EXTRACT(DAY FROM ${date_raw}) = EXTRACT(DAY FROM ${synthetic_end_date}) AND
-          EXTRACT(HOUR FROM ${date_raw}) < EXTRACT(HOUR FROM ${synthetic_end_date})
-        )
-        OR
-        (
-          EXTRACT(DAY FROM ${date_raw}) = EXTRACT(DAY FROM ${synthetic_end_date}) AND
-          EXTRACT(HOUR FROM ${date_raw}) <= EXTRACT(HOUR FROM ${synthetic_end_date}) AND
-          EXTRACT(MINUTE FROM ${date_raw}) < EXTRACT(MINUTE FROM ${synthetic_end_date})
-        )
+      (EXTRACT(DAY FROM ${date_raw}) <= EXTRACT(DAY FROM ${synthetic_end_date})
+
       );;
   }
+
+#         OR
+#         (
+#           EXTRACT(DAY FROM ${date_raw}) = EXTRACT(DAY FROM ${synthetic_end_date}) AND
+#           EXTRACT(HOUR FROM ${date_raw}) < EXTRACT(HOUR FROM ${synthetic_end_date})
+#         )
+#         OR
+#         (
+#           EXTRACT(DAY FROM ${date_raw}) = EXTRACT(DAY FROM ${synthetic_end_date}) AND
+#           EXTRACT(HOUR FROM ${date_raw}) <= EXTRACT(HOUR FROM ${synthetic_end_date}) AND
+#           EXTRACT(MINUTE FROM ${date_raw}) < EXTRACT(MINUTE FROM ${synthetic_end_date})
+#         )
 
   dimension: is_before_ytd {
     description: "Filter this on 'yes' to compare to same period in previous years"
@@ -314,6 +317,14 @@ dimension: synthetic_end_date {
       &sorts=category_facts.category_by_amount_tail&limit=500&column_limit=50&vis_config={{ vis_config | encode_uri }}&toggle=dat,pik,vis"
     }
   }
+
+measure: net_income {
+  type: sum
+  sql:  ${amount} ;;
+  value_format_name: usd
+  drill_fields: [transaction_detail*]
+}
+
 
 measure: running_total_spend {
   label: "Running Total Spend"
