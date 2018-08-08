@@ -49,7 +49,7 @@ filter: comparison_period {
   type: date
   sql:
      ${date_raw}>= {% date_start comparison_period  %}
-  AND ${date_raw} <= {% date_end reporting_period %}
+  AND ${date_raw} < {% date_end reporting_period %}
   ;;
 
 }
@@ -78,7 +78,7 @@ parameter: imputed_periods_type {
     type: yesno
     sql:
      ${date_raw} >= ({% date_start reporting_period %} - INTERVAL '{% parameter imputed_periods %} {% parameter imputed_periods_type %}')
-  AND ${date_raw} <= {% date_end reporting_period %}
+  AND ${date_raw} < {% date_end reporting_period %}
   ;;
 
     }
@@ -127,12 +127,15 @@ parameter: imputed_periods_type {
   }
 
 dimension: synthetic_end_date {
+
   type: date
   hidden: yes
   sql:
   CASE
-    WHEN CURRENT_DATE < {% if date_date._is_filtered %} {% date_end date_date %} {% else %} {% date_end reporting_period %} {% endif %} THEN CURRENT_DATE
-    ELSE {% if date_date._is_filtered %} {% date_end date_date %} {% else %} {% date_end reporting_period %} {% endif %}
+    WHEN
+    CURRENT_DATE <
+    {% if date_date._is_filtered %} {% date_end date_date %} {% else %} {% date_end reporting_period %} {% endif %} THEN CURRENT_DATE
+    ELSE {% if date_date._is_filtered %} {% date_end date_date %} {% else %} {% date_end reporting_period %} - INTERVAL '1 day' {% endif %}
   END
   ;;
 }
