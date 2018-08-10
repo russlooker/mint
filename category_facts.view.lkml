@@ -150,3 +150,30 @@ view: category_facts {
   }
 ####### AVG #######
 }
+
+
+view: taxonomy {
+  sql_table_name: public.taxonomy ;;
+
+  dimension: category {
+    label: "High Level Category"
+    view_label: "Category"
+    type: string
+    sql: ${TABLE}."category" ;;
+  }
+
+  dimension: subcategory {
+    hidden: yes
+    primary_key: yes
+    type: string
+    sql: ${TABLE}."subcategory" ;;
+  }
+
+  dimension: is_nondiscretionary {
+    label: "Discretionary"
+    view_label: "Category"
+    type: yesno
+    sql: NOT ${TABLE}.nondiscretionary ;;
+  }
+
+}

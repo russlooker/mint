@@ -29,4 +29,9 @@ explore: transactions {
     relationship: many_to_one
     sql_on:  lower(${transactions.category}) = lower(${category_facts.category})  ;;
   }
+  join: taxonomy {
+    type: left_outer
+    sql_on:  lower(${transactions.category}) = ${taxonomy.subcategory}  ;;
+    relationship: many_to_one
+  }
 }
