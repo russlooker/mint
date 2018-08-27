@@ -112,6 +112,18 @@ view: merchant_facts {
         from_field: transactions.comparison_period
         to_field: transactions.comparison_period
       }
+      bind_filters: {
+        from_field: transactions.is_before_mtd
+        to_field: transactions.is_before_mtd
+      }
+      bind_filters: {
+        from_field: transactions.is_before_ytd
+        to_field: transactions.is_before_ytd
+      }
+      bind_filters: {
+        from_field: transactions.is_before_wtd
+        to_field: transactions.is_before_wtd
+      }
     }
   }
 
