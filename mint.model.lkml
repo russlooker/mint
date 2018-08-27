@@ -25,6 +25,7 @@ explore: transactions {
     sql_on:  lower(${transactions.description}) = lower(${merchant_facts.merchant})  ;;
   }
   join: category_facts {
+#     from: category_facts_2
     type: left_outer
     relationship: many_to_one
     sql_on:  lower(${transactions.category}) = lower(${category_facts.category})  ;;

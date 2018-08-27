@@ -1,54 +1,118 @@
 view: merchant_facts {
   label: "Merchant"
   derived_table: {
-    sql:
-      SELECT
-         T."Description"
-        ,SUM(T."Amount")                                              AS total_amount
-        ,COUNT(DISTINCT T.id)                                         AS volume
-        ,AVG(T."Amount")                                              AS avg_amount
-        ,MAX(T."Amount")                                              AS max_amount
-        ,COUNT(DISTINCT id)*1.0/NULLIF(MAX(T."Date")-MIN(T."Date"),0) AS frequency
-        ,COUNT(DISTINCT T."Amount")                                   AS charge_amount_diversity
-        ,MIN(T."Date")                                                AS first_transaction
-        ,MAX(T."Date")                                                AS last_transaction
-        ,MAX(T."Date")-MIN(T."Date")                                  AS duration
-        ,ROW_NUMBER() OVER (ORDER BY SUM(T."Amount") DESC)            AS rank_by_amount
-        ,ROW_NUMBER() OVER (ORDER BY COUNT(DISTINCT T.id) DESC)       AS rank_by_number
-        ,ROW_NUMBER() OVER (ORDER BY AVG(T."Amount") DESC)            AS rank_by_avg
-      FROM
-        public.transactions T
-      WHERE
-        1=1
-        AND {% condition transactions.transaction_type %}   T."Transaction Type"     {% endcondition %}
-        AND {% condition transactions.category %}           T."Category"             {% endcondition %}
-        AND {% condition transactions.notes %}              T."Notes"                {% endcondition %}
-        AND {% condition transactions.labels %}             T."Labels"               {% endcondition %}
-        AND {% condition transactions.description %}        T."Description"          {% endcondition %}
-        AND {% condition transactions.account_name %}       T."Account Name"         {% endcondition %}
-        AND {% condition transactions.date_date %}          T."Date"                 {% endcondition %}
-        AND {% condition transactions.date_month %}         T."Date"                 {% endcondition %}
-        AND {% condition transactions.date_quarter %}       T."Date"                 {% endcondition %}
-        AND {% condition transactions.date_year %}          T."Date"                 {% endcondition %}
-        AND {% condition transactions.date_week %}          T."Date"                 {% endcondition %}
-        AND {% condition transactions.date_week_of_year %}  T."Date"                 {% endcondition %}
-        AND {% condition transactions.date_month_num %}     T."Date"                 {% endcondition %}
-        AND {% condition transactions.date_day_of_year %}   T."Date"                 {% endcondition %}
-        AND {% condition transactions.date_day_of_week %}   T."Date"                 {% endcondition %}
-        AND {% condition transactions.date_day_of_week_index %} T."Date"             {% endcondition %}
-        AND {% condition transactions.is_transfer %}  {{ transactions.is_transfer._sql }}  {% endcondition %}
-        AND {% condition transactions.is_expensable %} {{ transactions.is_expensable._sql }}{% endcondition %}
-        AND ({% if transactions.comparison_period_imputed._in_query %}
-                   T."Date" >= ({% date_start transactions.reporting_period %}
-                  - INTERVAL '{% parameter transactions.imputed_periods %} {% parameter transactions.imputed_periods_type %}')
-                    AND T."Date" <= {% date_end transactions.reporting_period %}
+    explore_source: transactions {
+      column: description {}
+      column: total_amount  { field: transactions.total_spend_amount }
+      column: volume        { field: transactions.count }
+      column: avg_amount    { field: transactions.average_spend_amount }
+      column: max_amount    { field: transactions.largest_transaction }
+      column: first_transaction {}
+      column: last_transaction {}
+      column: count_of_amounts {}
+      derived_column: rank_by_amount { sql: ROW_NUMBER() OVER (ORDER BY total_amount DESC) ;;}
+      derived_column: rank_by_number { sql: ROW_NUMBER() OVER (ORDER BY volume DESC) ;;}
+      derived_column: rank_by_avg    { sql: ROW_NUMBER() OVER (ORDER BY volume DESC) ;;}
+      derived_column: frequency                { sql: (volume * 1.0)/NULLIF(last_transaction - first_transaction,0) ;;}
+      derived_column: duration                 { sql: last_transaction - first_transaction ;;}
 
-            {% else %}
-              1=1
-            {% endif %})
-      GROUP BY
-        1
-       ;;
+      bind_filters: {
+        from_field: transactions.transaction_type
+        to_field: transactions.transaction_type
+      }
+      bind_filters: {
+        from_field: transactions.category
+        to_field: transactions.category
+      }
+      bind_filters: {
+        from_field: transactions.notes
+        to_field: transactions.notes
+      }
+      bind_filters: {
+        from_field: transactions.labels
+        to_field: transactions.labels
+      }
+      bind_filters: {
+        from_field: transactions.description
+        to_field: transactions.description
+      }
+      bind_filters: {
+        from_field: transactions.account_name
+        to_field: transactions.account_name
+      }
+      bind_filters: {
+        from_field: transactions.date_date
+        to_field: transactions.date_date
+      }
+      bind_filters: {
+        from_field: transactions.date_month
+        to_field: transactions.date_month
+      }
+      bind_filters: {
+        from_field: transactions.date_quarter
+        to_field: transactions.date_quarter
+      }
+      bind_filters: {
+        from_field: transactions.date_year
+        to_field: transactions.date_year
+      }
+      bind_filters: {
+        from_field: transactions.date_week
+        to_field: transactions.date_week
+      }
+      bind_filters: {
+        from_field: transactions.date_week_of_year
+        to_field: transactions.date_week_of_year
+      }
+      bind_filters: {
+        from_field: transactions.date_month_num
+        to_field: transactions.date_month_num
+      }
+      bind_filters: {
+        from_field: transactions.date_day_of_year
+        to_field: transactions.date_day_of_year
+      }
+      bind_filters: {
+        from_field: transactions.date_day_of_week
+        to_field: transactions.date_day_of_week
+      }
+      bind_filters: {
+        from_field: transactions.date_day_of_week_index
+        to_field: transactions.date_day_of_week_index
+      }
+      bind_filters: {
+        from_field: transactions.is_transfer
+        to_field: transactions.is_transfer
+      }
+      bind_filters: {
+        from_field: transactions.is_expensable
+        to_field: transactions.is_expensable
+      }
+      bind_filters: {
+        from_field: transactions.is_reimbursement
+        to_field: transactions.is_reimbursement
+      }
+      bind_filters: {
+        from_field: transactions.comparison_period_imputed
+        to_field: transactions.comparison_period_imputed
+      }
+      bind_filters: {
+        from_field: transactions.imputed_periods
+        to_field: transactions.imputed_periods
+      }
+      bind_filters: {
+        from_field: transactions.imputed_periods_type
+        to_field: transactions.imputed_periods_type
+      }
+      bind_filters: {
+        from_field: transactions.reporting_period
+        to_field: transactions.reporting_period
+      }
+      bind_filters: {
+        from_field: transactions.comparison_period
+        to_field: transactions.comparison_period
+      }
+    }
   }
 
   filter: tail {
@@ -59,7 +123,7 @@ view: merchant_facts {
 
   dimension: merchant {
     type: string
-    sql: ${TABLE}."Description" ;;
+    sql: ${TABLE}.description ;;
     hidden: yes
   }
 
@@ -97,7 +161,7 @@ view: merchant_facts {
 dimension: charge_diversity {
   type: number
   group_label: "Facts"
-  sql: ${TABLE}.charge_amount_diversity ;;
+  sql: ${TABLE}.count_of_amounts ;;
 }
 dimension: charge_diversity_ratio {
   type: number
@@ -274,3 +338,53 @@ dimension: charge_diversity_ratio {
   }
 ####### AVG #######
 }
+
+
+#     sql:
+#       SELECT
+#          T."Description"
+#         ,SUM(T."Amount")                                              AS total_amount
+#         ,COUNT(DISTINCT T.id)                                         AS volume
+#         ,AVG(T."Amount")                                              AS avg_amount
+#         ,MAX(T."Amount")                                              AS max_amount
+#         ,COUNT(DISTINCT id)*1.0/NULLIF(MAX(T."Date")-MIN(T."Date"),0) AS frequency
+#         ,COUNT(DISTINCT T."Amount")                                   AS charge_amount_diversity
+#         ,MIN(T."Date")                                                AS first_transaction
+#         ,MAX(T."Date")                                                AS last_transaction
+#         ,MAX(T."Date")-MIN(T."Date")                                  AS duration
+#         ,ROW_NUMBER() OVER (ORDER BY SUM(T."Amount") DESC)            AS rank_by_amount
+#         ,ROW_NUMBER() OVER (ORDER BY COUNT(DISTINCT T.id) DESC)       AS rank_by_number
+#         ,ROW_NUMBER() OVER (ORDER BY AVG(T."Amount") DESC)            AS rank_by_avg
+#       FROM
+#         public.transactions T
+#       WHERE
+#         1=1
+#         AND {% condition transactions.transaction_type %}   T."Transaction Type"     {% endcondition %}
+#         AND {% condition transactions.category %}           T."Category"             {% endcondition %}
+#         AND {% condition transactions.notes %}              T."Notes"                {% endcondition %}
+#         AND {% condition transactions.labels %}             T."Labels"               {% endcondition %}
+#         AND {% condition transactions.description %}        T."Description"          {% endcondition %}
+#         AND {% condition transactions.account_name %}       T."Account Name"         {% endcondition %}
+#         AND {% condition transactions.date_date %}          T."Date"                 {% endcondition %}
+#         AND {% condition transactions.date_month %}         T."Date"                 {% endcondition %}
+#         AND {% condition transactions.date_quarter %}       T."Date"                 {% endcondition %}
+#         AND {% condition transactions.date_year %}          T."Date"                 {% endcondition %}
+#         AND {% condition transactions.date_week %}          T."Date"                 {% endcondition %}
+#         AND {% condition transactions.date_week_of_year %}  T."Date"                 {% endcondition %}
+#         AND {% condition transactions.date_month_num %}     T."Date"                 {% endcondition %}
+#         AND {% condition transactions.date_day_of_year %}   T."Date"                 {% endcondition %}
+#         AND {% condition transactions.date_day_of_week %}   T."Date"                 {% endcondition %}
+#         AND {% condition transactions.date_day_of_week_index %} T."Date"             {% endcondition %}
+#         AND {% condition transactions.is_transfer %}  {{ transactions.is_transfer._sql }}  {% endcondition %}
+#         AND {% condition transactions.is_expensable %} {{ transactions.is_expensable._sql }}{% endcondition %}
+#         AND ({% if transactions.comparison_period_imputed._in_query %}
+#                    T."Date" >= ({% date_start transactions.reporting_period %}
+#                   - INTERVAL '{% parameter transactions.imputed_periods %} {% parameter transactions.imputed_periods_type %}')
+#                     AND T."Date" <= {% date_end transactions.reporting_period %}
+#
+#             {% else %}
+#               1=1
+#             {% endif %})
+#       GROUP BY
+#         1
+#        ;;
