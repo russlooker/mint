@@ -342,6 +342,9 @@ view: transactions {
       }
     }
 
+
+
+
   measure: net_income {
       type: sum
       sql:  ${amount} ;;
