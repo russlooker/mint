@@ -354,9 +354,11 @@ view: transactions {
 
   measure: running_total_spend {
       label: "Running Total Spend"
+      direction: "column"
       drill_fields: [transaction_detail*]
       type: running_total
       sql: ${total_spend_amount} ;;
+
     }
 
   measure: average_spend_amount {
@@ -427,6 +429,13 @@ view: transactions {
     type: count_distinct
     sql: ${amount} ;;
     value_format_name: usd
+  }
+
+  measure: running_total_1 {
+    type: running_total
+    sql: ${total_spend_amount} ;;
+    direction: "column"
+    drill_fields: [transaction_detail*]
   }
 
 ###### SETS ######
