@@ -357,7 +357,8 @@ view: transactions {
       direction: "column"
       drill_fields: [transaction_detail*]
       type: running_total
-      sql: ${total_spend_amount} ;;
+      sql:
+      ${total_spend_amount} ;;
 
     }
 
